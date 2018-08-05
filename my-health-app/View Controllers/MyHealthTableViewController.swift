@@ -7,15 +7,29 @@
 //
 
 import UIKit
+import HealthKit
 
-class MyHealthTableViewController: UITableViewController {
+class MyHealthTableViewController: UITableViewController, HealthKitControllerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        initializeHealthKit()
     }
     
     // MARK: - Methods
+    
+    private func initializeHealthKit() {
+        // Check whether HealthKit is both enabled and available on the device
+        if HKHealthStore.isHealthDataAvailable() {
+            // Instantiate a HKHealthStore object
+            healthKitController.delegate = self
+            healthKitController.healthStore = HKHealthStore()
+            healthKitController.handleInitialHealthKitAuth(for: myHealthController.healthTypes)
+            // Do some more stuff
+            // Once user grants permission to share a data type, we can read/create new samples
+            // Everytime we want to save data to our app, we must check its authorizationStatus
+        }
+    }
     
     private func handleLocalNotificationAuth() {
         localNotificationHelper.getAuthorizationStatus(completion: { (status) in
@@ -23,7 +37,7 @@ class MyHealthTableViewController: UITableViewController {
                 // check if daily notifications have been set (userdefaults)
                 // else, schedulenotification
             } else {
-                localNotificationHelper.requestAuthorization(completion: { (success) in
+                self.localNotificationHelper.requestAuthorization(completion: { (success) in
                     if success {
                         // check if daily notifications have been set (userdefaults)
                         // else, schedulenotification
@@ -41,7 +55,6 @@ class MyHealthTableViewController: UITableViewController {
 //    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return 0
     }
 
@@ -65,6 +78,8 @@ class MyHealthTableViewController: UITableViewController {
     
     // MARK: - Properties
     
+    var myHealthController = MyHealthController()
+    var healthKitController = HealthKitController()
     var localNotificationHelper = LocalNotificationHelper()
 
 }

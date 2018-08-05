@@ -7,3 +7,16 @@
 //
 
 import Foundation
+import HealthKit
+
+class MyHealthController {
+    
+
+    
+    // MARK: - Properties
+    
+    let healthTypes = Set([HKObjectType.workoutType(),
+                        HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+                        HKObjectType.quantityType(forIdentifier: .heartRate)!])
+    
+}
