@@ -17,6 +17,9 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     }
     
     // MARK: - Methods
+    @IBAction func getCalendar(_ sender: Any) {
+        healthKitController.createTypeObject()
+    }
     
     private func initializeHealthKit() {
         // Check whether HealthKit is both enabled and available on the device

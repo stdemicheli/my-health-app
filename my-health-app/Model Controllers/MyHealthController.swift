@@ -15,8 +15,8 @@ class MyHealthController {
     
     // MARK: - Properties
     
-    let healthTypes = Set([HKObjectType.workoutType(),
-                        HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+    let healthTypes = Set([
+                        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
                         HKObjectType.quantityType(forIdentifier: .heartRate)!])
     
 }

@@ -20,6 +20,7 @@ class HealthKitController {
     func handleInitialHealthKitAuth(for healthTypes: Set<HKObjectType>) {
         guard let healthStore = healthStore else { return }
         let userDefaults = UserDefaults.standard
+        // Check if authorizedHealthTypes have been previously saved in userDefaults
         let authorizedHealthTypes = userDefaults.array(forKey: types.authorizedHealthTypes)
         
         if authorizedHealthTypes == nil {
@@ -27,7 +28,9 @@ class HealthKitController {
                 if !success {
                     NSLog("Error occured while requesting authorization for HKHealthStore: \(String(describing: error))")
                 }
-                userDefaults.set(healthTypes, forKey: self.types.authorizedHealthTypes)
+                // Save a list of authorizedHealthType identifiers in userDefaults
+                let healthTypeIdentifiers = self.getHKObjectTypeIdentifiers(for: healthTypes)
+                userDefaults.set(healthTypeIdentifiers, forKey: self.types.authorizedHealthTypes)
             })
         }
     }
@@ -56,6 +59,36 @@ class HealthKitController {
             }))
             delegate.present(alert, animated: true, completion: nil)
         }
+    }
+    
+    private func getHKObjectTypeIdentifiers(for set: Set<HKObjectType>) -> [String] {
+        return Array(set).map { $0.identifier }
+    }
+    
+    // Testing purposes
+    func createTypeObject() {
+        guard let sampleType = HKSampleType.quantityType(forIdentifier: .restingHeartRate) else {
+            fatalError("*** This method should never fail ***")
+        }
+        let calendar = NSCalendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.year, .month, .day], from: now)
+        guard let startDate = calendar.date(from: components) else {
+            fatalError("*** Unable to create the start date ***")
+        }
+        let newStartDate = calendar.date(byAdding: .day, value: -1, to: startDate)
+        let endDate = calendar.date(byAdding: .day, value: 1, to: startDate)
+        
+        let predicate = HKQuery.predicateForSamples(withStart: newStartDate, end: endDate, options: [])
+        
+        let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: Int(HKObjectQueryNoLimit), sortDescriptors: nil, resultsHandler: { (query, results, error) in
+            guard let samples = results as? [HKQuantitySample] else { fatalError("An error occured while fetching HK data") }
+            print(samples)
+        })
+        
+        healthStore?.execute(query)
+        
+        //HKObjectType.quantityType(forIdentifier: .restingHeartRate)
     }
     
     var delegate: HealthKitControllerDelegate?

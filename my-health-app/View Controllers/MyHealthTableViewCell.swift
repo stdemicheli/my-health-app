@@ -20,4 +20,7 @@ class MyHealthTableViewCell: UITableViewCell {
     
     // MARK: - Properties
 
+    @IBOutlet weak var metricTitleTextLabel: UILabel!
+    @IBOutlet weak var metricValueTextLabel: UILabel!
+    @IBOutlet weak var metricTypeTextLabel: UILabel!
 }

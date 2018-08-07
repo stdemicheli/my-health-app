@@ -12,13 +12,13 @@
         <!--myHealth-->
         <scene sceneID="9uL-IV-f47">
             <objects>
-                <tableViewController id="ATS-7A-Sj9" sceneMemberID="viewController">
+                <tableViewController id="ATS-7A-Sj9" customClass="MyHealthTableViewController" customModule="my_health_app" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="IOX-Je-0ps">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MyHealthCell" rowHeight="234" id="igJ-ik-000">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MyHealthCell" rowHeight="234" id="igJ-ik-000" customClass="MyHealthTableViewCell" customModule="my_health_app" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="375" height="234"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="igJ-ik-000" id="8cw-Yi-9Sy">
@@ -54,6 +54,11 @@
                                         <constraint firstItem="s67-fj-Mlk" firstAttribute="leading" secondItem="8cw-Yi-9Sy" secondAttribute="leadingMargin" constant="20" id="oB5-dZ-7RA"/>
                                     </constraints>
                                 </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="metricTitleTextLabel" destination="Gxf-2k-eEW" id="33A-u5-43V"/>
+                                    <outlet property="metricTypeTextLabel" destination="lui-3Z-ani" id="mBF-tH-9U2"/>
+                                    <outlet property="metricValueTextLabel" destination="gDZ-8j-Wei" id="ARL-lU-mVH"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -68,6 +73,9 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Calendar"/>
                             </button>
+                            <connections>
+                                <action selector="getCalendar:" destination="ATS-7A-Sj9" id="5IB-GQ-GIP"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                 </tableViewController>
