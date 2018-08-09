@@ -15,7 +15,11 @@ class MyHealthController {
     
     // MARK: - Properties
     
-    let healthTypes = Set([
+    let healthKitTypesToWrite: Set<HKSampleType>  = Set([
+                        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
+                        HKObjectType.quantityType(forIdentifier: .heartRate)!])
+    
+    let healthKitTypesToRead: Set<HKObjectType> = Set([
                         HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
                         HKObjectType.quantityType(forIdentifier: .heartRate)!])
     

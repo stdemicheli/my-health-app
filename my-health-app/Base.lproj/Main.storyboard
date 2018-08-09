@@ -67,14 +67,9 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="myHealth" id="qTe-eR-Y9u">
-                        <barButtonItem key="rightBarButtonItem" style="plain" id="m3O-Uu-SAk">
-                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="thm-HH-ZQq">
-                                <rect key="frame" x="276" y="7" width="83" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Calendar"/>
-                            </button>
+                        <barButtonItem key="rightBarButtonItem" title="Item" id="fqP-dS-GdV">
                             <connections>
-                                <action selector="getCalendar:" destination="ATS-7A-Sj9" id="5IB-GQ-GIP"/>
+                                <action selector="getCalendar:" destination="ATS-7A-Sj9" id="XGG-S5-VDf"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>

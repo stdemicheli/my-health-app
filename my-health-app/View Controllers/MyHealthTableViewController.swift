@@ -13,24 +13,39 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        initializeHealthKit()
+        healthKitController.authorizeHealthKit { (authorized, error) in
+            
+            guard authorized else {
+                
+                let baseMessage = "HealthKit Authorization Failed"
+                
+                if let error = error {
+                    print("\(baseMessage). Reason: \(error.localizedDescription)")
+                } else {
+                    print(baseMessage)
+                }
+                
+                return
+            }
+            
+            print("HealthKit Successfully Authorized.")
+        }
     }
     
     // MARK: - Methods
-    @IBAction func getCalendar(_ sender: Any) {
-        healthKitController.createTypeObject()
-    }
     
-    private func initializeHealthKit() {
-        // Check whether HealthKit is both enabled and available on the device
-        if HKHealthStore.isHealthDataAvailable() {
-            // Instantiate a HKHealthStore object
-            healthKitController.delegate = self
-            healthKitController.healthStore = HKHealthStore()
-            healthKitController.handleInitialHealthKitAuth(for: myHealthController.healthTypes)
-            // Do some more stuff
-            // Once user grants permission to share a data type, we can read/create new samples
-            // Everytime we want to save data to our app, we must check its authorizationStatus
+    @IBAction func getCalendar(_ sender: Any) {
+        healthKitController.getMostRecentSample(for: HKSampleType.quantityType(forIdentifier: .restingHeartRate)!) { (sample, error) in
+            guard let sample = sample else {
+                if let error = error {
+                    NSLog("Error occured fetching health data: \(error)")
+                }
+                print("Sample is nil")
+                return
+            }
+            
+            print(sample)
+            
         }
     }
     
@@ -82,7 +97,18 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     // MARK: - Properties
     
     var myHealthController = MyHealthController()
-    var healthKitController = HealthKitController()
+    var healthKitController: HealthKitController {
+        return HealthKitController(healthTypesToWrite: healthKitTypesToWrite, healthTypesToRead: healthKitTypesToRead)
+    }
     var localNotificationHelper = LocalNotificationHelper()
+    
+    // To be moved to myHealthController
+    let healthKitTypesToWrite: Set<HKSampleType>  = Set([
+        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
+        HKObjectType.quantityType(forIdentifier: .heartRate)!])
+    
+    let healthKitTypesToRead: Set<HKObjectType> = Set([
+        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
+        HKObjectType.quantityType(forIdentifier: .heartRate)!])
 
 }

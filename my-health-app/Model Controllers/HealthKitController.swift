@@ -10,33 +10,49 @@ import Foundation
 import UIKit
 import HealthKit
 
-protocol HealthKitControllerDelegate {
-    
+// TODO: Think about whether delegate is actually needed
+protocol HealthKitControllerDelegate: class {
 }
 
 class HealthKitController {
     
-    // Check whether initial authorization has been done
-    func handleInitialHealthKitAuth(for healthTypes: Set<HKObjectType>) {
-        guard let healthStore = healthStore else { return }
-        let userDefaults = UserDefaults.standard
-        // Check if authorizedHealthTypes have been previously saved in userDefaults
-        let authorizedHealthTypes = userDefaults.array(forKey: types.authorizedHealthTypes)
+    // MARK: - Init
+    
+    init(healthTypesToWrite: Set<HKSampleType>, healthTypesToRead: Set<HKObjectType>) {
+        self.healthTypesToWrite = healthTypesToWrite
+        self.healthTypesToRead = healthTypesToRead
+    }
+    
+    // MARK: - Properties
+    
+    var healthTypesToWrite: Set<HKSampleType>
+    var healthTypesToRead: Set<HKObjectType>
+    var healthStore: HKHealthStore? {
+        return HKHealthStore.isHealthDataAvailable() ? HKHealthStore() : nil
+    }
+    weak var delegate: HealthKitControllerDelegate?
+    
+    private enum HealthkitSetupError: Error {
+        case notAvailableOnDevice
+        case dataTypeNotAvailable
+    }
+    
+    // MARK: - Methods
+    
+    func authorizeHealthKit(completion: @escaping (Bool, Error?) -> Void) {
+        guard let healthStore = self.healthStore else {
+            NSLog("HealthKit is not available on this device")
+            completion(false, HealthkitSetupError.notAvailableOnDevice)
+            return
+        }
         
-        if authorizedHealthTypes == nil {
-            healthStore.requestAuthorization(toShare: nil, read: healthTypes, completion: { (success, error) in
-                if !success {
-                    NSLog("Error occured while requesting authorization for HKHealthStore: \(String(describing: error))")
-                }
-                // Save a list of authorizedHealthType identifiers in userDefaults
-                let healthTypeIdentifiers = self.getHKObjectTypeIdentifiers(for: healthTypes)
-                userDefaults.set(healthTypeIdentifiers, forKey: self.types.authorizedHealthTypes)
-            })
+        healthStore.requestAuthorization(toShare: self.healthTypesToWrite, read: self.healthTypesToRead) { (success, error) in
+            completion(success, error)
         }
     }
     
     // Check authorization status for a single HKObject
-    func handleHealthKitAuth(for type: HKObjectType) {
+    func handleHealthKitAuth(forObject type: HKObjectType) {
         guard let healthStore = healthStore else { return }
         let authStatus = healthStore.authorizationStatus(for: type)
         
@@ -51,7 +67,30 @@ class HealthKitController {
         }
     }
     
-    func alertUserAboutRestrictedHKAccess() {
+    func getMostRecentSample(for sampleType: HKSampleType, completion: @escaping (HKQuantitySample?, Error?) -> Void) {
+        let mostRecentPredicate = HKQuery.predicateForSamples(withStart: Date.distantPast, end: Date(), options: .strictEndDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        let limit = 1
+        let sampleQuery = HKSampleQuery(sampleType: sampleType,
+                                        predicate: mostRecentPredicate,
+                                        limit: limit,
+                                        sortDescriptors: [sortDescriptor]) { (query, samples, error) in
+                                            
+            DispatchQueue.main.async {
+                guard   let samples = samples,
+                        let mostRecentSample = samples.first as? HKQuantitySample else {
+                            completion(nil, error)
+                            return
+                        }
+                completion(mostRecentSample, nil)
+            }
+                                            
+        }
+        
+        healthStore?.execute(sampleQuery)
+    }
+    
+    private func alertUserAboutRestrictedHKAccess() {
         if let delegate = delegate as? UIViewController {
             let alert = UIAlertController(title: "Can\'t access health data", message: "Please go to your settings and allow the app access to your health data.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in
@@ -64,35 +103,4 @@ class HealthKitController {
     private func getHKObjectTypeIdentifiers(for set: Set<HKObjectType>) -> [String] {
         return Array(set).map { $0.identifier }
     }
-    
-    // Testing purposes
-    func createTypeObject() {
-        guard let sampleType = HKSampleType.quantityType(forIdentifier: .restingHeartRate) else {
-            fatalError("*** This method should never fail ***")
-        }
-        let calendar = NSCalendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.year, .month, .day], from: now)
-        guard let startDate = calendar.date(from: components) else {
-            fatalError("*** Unable to create the start date ***")
-        }
-        let newStartDate = calendar.date(byAdding: .day, value: -1, to: startDate)
-        let endDate = calendar.date(byAdding: .day, value: 1, to: startDate)
-        
-        let predicate = HKQuery.predicateForSamples(withStart: newStartDate, end: endDate, options: [])
-        
-        let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: Int(HKObjectQueryNoLimit), sortDescriptors: nil, resultsHandler: { (query, results, error) in
-            guard let samples = results as? [HKQuantitySample] else { fatalError("An error occured while fetching HK data") }
-            print(samples)
-        })
-        
-        healthStore?.execute(query)
-        
-        //HKObjectType.quantityType(forIdentifier: .restingHeartRate)
-    }
-    
-    var delegate: HealthKitControllerDelegate?
-    var healthStore: HKHealthStore?
-    var types = Types()
-    
 }
