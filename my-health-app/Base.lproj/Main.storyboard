@@ -18,30 +18,30 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MyHealthCell" rowHeight="234" id="igJ-ik-000" customClass="MyHealthTableViewCell" customModule="my_health_app" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="28" width="375" height="234"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MyHealthCell" rowHeight="128" id="igJ-ik-000" customClass="MyHealthTableViewCell" customModule="my_health_app" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="28" width="375" height="128"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="igJ-ik-000" id="8cw-Yi-9Sy">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="233.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="127.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <stackView opaque="NO" contentMode="scaleAspectFit" ambiguous="YES" axis="vertical" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="s67-fj-Mlk">
-                                            <rect key="frame" x="36" y="61" width="303" height="95.5"/>
+                                        <stackView opaque="NO" contentMode="scaleAspectFit" axis="vertical" distribution="fillEqually" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="s67-fj-Mlk">
+                                            <rect key="frame" x="36" y="19" width="303" height="90"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gxf-2k-eEW">
-                                                    <rect key="frame" x="133" y="0.0" width="37.5" height="24"/>
+                                                    <rect key="frame" x="133" y="0.0" width="37.5" height="24.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Metric" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gDZ-8j-Wei">
-                                                    <rect key="frame" x="101.5" y="32" width="100.5" height="38.5"/>
+                                                    <rect key="frame" x="101.5" y="32.5" width="100.5" height="25"/>
                                                     <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="32"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Metric Type" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lui-3Z-ani">
-                                                    <rect key="frame" x="113.5" y="78.5" width="76.5" height="17"/>
+                                                    <rect key="frame" x="113.5" y="65.5" width="76.5" height="24.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -50,7 +50,9 @@
                                         </stackView>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="s67-fj-Mlk" firstAttribute="top" secondItem="8cw-Yi-9Sy" secondAttribute="topMargin" constant="8" id="1Uy-tW-ZVH"/>
                                         <constraint firstAttribute="trailingMargin" secondItem="s67-fj-Mlk" secondAttribute="trailing" constant="20" id="VoP-zc-4iZ"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="s67-fj-Mlk" secondAttribute="bottom" constant="8" id="apW-Ad-v5b"/>
                                         <constraint firstItem="s67-fj-Mlk" firstAttribute="leading" secondItem="8cw-Yi-9Sy" secondAttribute="leadingMargin" constant="20" id="oB5-dZ-7RA"/>
                                     </constraints>
                                 </tableViewCellContentView>
@@ -76,7 +78,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="44Y-dQ-rBe" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1416.8" y="735.38230884557731"/>
+            <point key="canvasLocation" x="1266.4000000000001" y="735.38230884557731"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="COh-jH-HJg">

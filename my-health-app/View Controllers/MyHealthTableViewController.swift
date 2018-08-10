@@ -29,41 +29,51 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
             }
             
             print("HealthKit Successfully Authorized.")
+            self.loadAndDisplayRestingHeartRate()
         }
     }
     
     // MARK: - Methods
     
     @IBAction func getCalendar(_ sender: Any) {
+    }
+    
+    private func updateHealthInfo() {
+        loadAndDisplayRestingHeartRate()
+    }
+    
+    private func loadAndDisplayRestingHeartRate() {
         healthKitController.getMostRecentSample(for: HKSampleType.quantityType(forIdentifier: .restingHeartRate)!) { (sample, error) in
             guard let sample = sample else {
                 if let error = error {
                     NSLog("Error occured fetching health data: \(error)")
                 }
-                print("Sample is nil")
                 return
             }
             
-            print(sample)
-            
+            let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
+            let restingHeartRate = sample.quantity.doubleValue(for: unit)
+            self.myHealth.restingHeartRate = restingHeartRate
+            self.tableView.reloadData()
+            print("Resting Heart Rate loaded.")
         }
     }
     
-    private func handleLocalNotificationAuth() {
-        localNotificationHelper.getAuthorizationStatus(completion: { (status) in
-            if status == .authorized {
-                // check if daily notifications have been set (userdefaults)
-                // else, schedulenotification
-            } else {
-                self.localNotificationHelper.requestAuthorization(completion: { (success) in
-                    if success {
-                        // check if daily notifications have been set (userdefaults)
-                        // else, schedulenotification
-                    }
-                })
-            }
-        })
-    }
+//    private func handleLocalNotificationAuth() {
+//        localNotificationHelper.getAuthorizationStatus(completion: { (status) in
+//            if status == .authorized {
+//                // check if daily notifications have been set (userdefaults)
+//                // else, schedulenotification
+//            } else {
+//                self.localNotificationHelper.requestAuthorization(completion: { (success) in
+//                    if success {
+//                        // check if daily notifications have been set (userdefaults)
+//                        // else, schedulenotification
+//                    }
+//                })
+//            }
+//        })
+//    }
 
     // MARK: - Table view data source
 
@@ -73,13 +83,17 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
 //    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MyHealthCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MyHealthCell", for: indexPath) as! MyHealthTableViewCell
 
-        // Configure the cell...
+        if let restingHeartRate = myHealth.restingHeartRate {
+            cell.metricValueTextLabel?.text = String(format: "%.1f", restingHeartRate)
+            cell.metricTypeTextLabel?.text = "BPM"
+            cell.metricTitleTextLabel?.text = "Resting Heart Rate"
+        }
 
         return cell
     }
@@ -95,6 +109,8 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     */
     
     // MARK: - Properties
+    
+    private var myHealth = MyHealth()
     
     var myHealthController = MyHealthController()
     var healthKitController: HealthKitController {

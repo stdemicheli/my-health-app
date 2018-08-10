@@ -11,10 +11,6 @@ import HealthKit
 
 struct MyHealth {
     
-    init(someHealthObject: UUID) {
-        self.someHealthObject = HKQuery.predicateForObject(with: someHealthObject)
-    }
-    
-    var someHealthObject: NSPredicate
+    var restingHeartRate: Double?
     
 }
