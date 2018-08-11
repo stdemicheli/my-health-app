@@ -12,5 +12,6 @@ import HealthKit
 struct MyHealth {
     
     var restingHeartRate: Double?
+    var hoursOfSleep: Int?
     
 }

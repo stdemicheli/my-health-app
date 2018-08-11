@@ -29,7 +29,7 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
             }
             
             print("HealthKit Successfully Authorized.")
-            self.loadAndDisplayRestingHeartRate()
+            self.updateHealthInfo()
         }
     }
     
@@ -38,8 +38,15 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     @IBAction func getCalendar(_ sender: Any) {
     }
     
+    private func updateLabels() {
+        if let restingHeartRate = myHealth.restingHeartRate {
+            restingHRLabel.text = String(format: "%.1f", restingHeartRate)
+        }
+    }
+    
     private func updateHealthInfo() {
         loadAndDisplayRestingHeartRate()
+        loadAndDisplaySleepAnalyisis()
     }
     
     private func loadAndDisplayRestingHeartRate() {
@@ -54,8 +61,20 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
             let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
             let restingHeartRate = sample.quantity.doubleValue(for: unit)
             self.myHealth.restingHeartRate = restingHeartRate
-            self.tableView.reloadData()
-            print("Resting Heart Rate loaded.")
+            self.updateLabels()
+            print("Data loaded for: \(HKSampleType.quantityType(forIdentifier: .restingHeartRate)!.identifier)")
+        }
+    }
+    
+    private func loadAndDisplaySleepAnalyisis() {
+        let today = Date()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        
+        healthKitController.getSleepAnalysis(from: yesterday, to: today) { (error) in
+            if let error = error {
+                NSLog("Error occured fetching health data: \(error)")
+                return
+            }
         }
     }
     
@@ -75,28 +94,6 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
 //        })
 //    }
 
-    // MARK: - Table view data source
-
-//    override func numberOfSections(in tableView: UITableView) -> Int {
-//        // #warning Incomplete implementation, return the number of sections
-//        return 0
-//    }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MyHealthCell", for: indexPath) as! MyHealthTableViewCell
-
-        if let restingHeartRate = myHealth.restingHeartRate {
-            cell.metricValueTextLabel?.text = String(format: "%.1f", restingHeartRate)
-            cell.metricTypeTextLabel?.text = "BPM"
-            cell.metricTitleTextLabel?.text = "Resting Heart Rate"
-        }
-
-        return cell
-    }
 
     /*
     // MARK: - Navigation
@@ -111,20 +108,13 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     // MARK: - Properties
     
     private var myHealth = MyHealth()
-    
-    var myHealthController = MyHealthController()
+    let myHealthController = MyHealthController()
     var healthKitController: HealthKitController {
-        return HealthKitController(healthTypesToWrite: healthKitTypesToWrite, healthTypesToRead: healthKitTypesToRead)
+        return HealthKitController(healthTypesToWrite: HealthKitConstants().healthKitTypesToWrite, healthTypesToRead: HealthKitConstants().healthKitTypesToRead)
     }
-    var localNotificationHelper = LocalNotificationHelper()
-    
-    // To be moved to myHealthController
-    let healthKitTypesToWrite: Set<HKSampleType>  = Set([
-        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
-        HKObjectType.quantityType(forIdentifier: .heartRate)!])
-    
-    let healthKitTypesToRead: Set<HKObjectType> = Set([
-        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
-        HKObjectType.quantityType(forIdentifier: .heartRate)!])
+    let localNotificationHelper = LocalNotificationHelper()
 
+    @IBOutlet weak var restingHRLabel: UILabel!
+    @IBOutlet weak var hoursOfSleepLabel: UILabel!
+    
 }

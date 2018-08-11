@@ -11,16 +11,16 @@ import HealthKit
 
 class MyHealthController {
     
-
+    
+    // MARK: - Public Methods
+    
+    // MARK: - Private Methods
+    
+    private func getHKObjectTypeIdentifiers(for set: Set<HKObjectType>) -> [String] {
+        return Array(set).map { $0.identifier }
+    }
     
     // MARK: - Properties
     
-    let healthKitTypesToWrite: Set<HKSampleType>  = Set([
-                        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
-                        HKObjectType.quantityType(forIdentifier: .heartRate)!])
-    
-    let healthKitTypesToRead: Set<HKObjectType> = Set([
-                        HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
-                        HKObjectType.quantityType(forIdentifier: .heartRate)!])
     
 }

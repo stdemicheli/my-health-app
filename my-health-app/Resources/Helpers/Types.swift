@@ -8,8 +8,9 @@
 
 import Foundation
 
-class Types {
+enum Types: String {
     
-    let authorizedHealthTypes: String = "authorizedHealthTypes"
+    case authorizedHealthTypes
+    case userHealthTypes
     
 }

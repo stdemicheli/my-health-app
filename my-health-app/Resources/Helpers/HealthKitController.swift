@@ -67,6 +67,79 @@ class HealthKitController {
         }
     }
     
+    func getSleepAnalysis(from startDate: Date, to endDate: Date, completion: @escaping (Error?) -> Void) {
+        if let sleepType = HKObjectType.categoryType(forIdentifier: HKCategoryTypeIdentifier.sleepAnalysis) {
+            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+            
+            // let noon = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
+            let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+            let yesterdayPredicate = HKQuery.predicateForSamples(withStart: yesterday, end: Date(), options: .strictEndDate)
+            
+            let sampleQuery = HKSampleQuery(sampleType: sleepType, predicate: yesterdayPredicate, limit: 30, sortDescriptors: [sortDescriptor]) { (query, samples, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        NSLog("Error retrieving sleep data: \(error)")
+                        completion(error)
+                        return
+                    }
+                    
+                    guard let samples = samples else {
+                        NSLog("Could not retrieve sample using query: \(query)")
+                        completion(NSError())
+                        return
+                    }
+                    
+                    guard let categorySamples = samples as? [HKCategorySample] else { return }
+                    let filteredCategorySamples = self.filterOverlappingTimeIntervals(in: categorySamples)
+                    
+                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.asleep.rawValue, in: filteredCategorySamples) / 3600))
+                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.inBed.rawValue, in: filteredCategorySamples) / 3600))
+                    print(Double(self.timeToFallAsleep(in: filteredCategorySamples) / 60))
+                    
+                    for sample in filteredCategorySamples {
+                        let value = (sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue) ? "asleep" : "inBed"
+                        print("HealthKit sleep: \(sample.startDate) \(sample.endDate) - value: \(value)")
+                    }
+                    
+                }
+            }
+            healthStore?.execute(sampleQuery)
+        }
+    }
+    
+    private func getSleepTimeInterval(for HKCategory: Int, in samples: [HKCategorySample]) -> TimeInterval {
+        var timeAsleep: TimeInterval = 0.0
+        for sample in samples {
+            if sample.value == HKCategory {
+                timeAsleep += sample.endDate.timeIntervalSince(sample.startDate)
+            }
+        }
+        return timeAsleep
+    }
+    
+    private func filterOverlappingTimeIntervals(in samples: [HKCategorySample]) -> [HKCategorySample] {
+        var filteredSamples: [HKCategorySample] = []
+        for (index, sample) in samples.enumerated() {
+            if index == samples.count - 1 { break }
+            if max(sample.startDate, samples[index + 1].startDate) < min(sample.endDate, samples[index + 1].endDate) {
+                filteredSamples.append(sample)
+            }
+        }
+        return filteredSamples
+    }
+    
+    private func timeToFallAsleep(in samples: [HKCategorySample]) -> TimeInterval {
+        let timeFellAsleep = samples.filter { $0.value == HKCategoryValueSleepAnalysis.asleep.rawValue }
+                                    .map { $0.startDate }
+                                    .reduce(Date()) { $0 > $1 ? $1 : $0 }
+        
+        let gotInBed = samples.filter { $0.value == HKCategoryValueSleepAnalysis.inBed.rawValue }
+                              .map { $0.startDate }
+                              .reduce(Date()) { $0 > $1 ? $1 : $0 }
+        
+        return timeFellAsleep.timeIntervalSince(gotInBed)
+    }
+    
     func getMostRecentSample(for sampleType: HKSampleType, completion: @escaping (HKQuantitySample?, Error?) -> Void) {
         let mostRecentPredicate = HKQuery.predicateForSamples(withStart: Date.distantPast, end: Date(), options: .strictEndDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -98,9 +171,5 @@ class HealthKitController {
             }))
             delegate.present(alert, animated: true, completion: nil)
         }
-    }
-    
-    private func getHKObjectTypeIdentifiers(for set: Set<HKObjectType>) -> [String] {
-        return Array(set).map { $0.identifier }
     }
 }
