@@ -42,6 +42,14 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
         if let restingHeartRate = myHealth.restingHeartRate {
             restingHRLabel.text = String(format: "%.1f", restingHeartRate)
         }
+        
+        if let timeAsleep = myHealth.timeAsleep {
+            timeAsleepLabel.text = "\(String(format: "%.1f", timeAsleep)) hr"
+        }
+
+        if let timeToFallAsleep = myHealth.timeToFallAsleep {
+            timeToFallAsleepLabel.text = "\(String(format: "%.0f", timeToFallAsleep)) min"
+        }
     }
     
     private func updateHealthInfo() {
@@ -62,7 +70,6 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
             let restingHeartRate = sample.quantity.doubleValue(for: unit)
             self.myHealth.restingHeartRate = restingHeartRate
             self.updateLabels()
-            print("Data loaded for: \(HKSampleType.quantityType(forIdentifier: .restingHeartRate)!.identifier)")
         }
     }
     
@@ -70,11 +77,20 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
         let today = Date()
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
         
-        healthKitController.getSleepAnalysis(from: yesterday, to: today) { (error) in
+        healthKitController.getSleepAnalysis(from: yesterday, to: today) { (sample, error) in
             if let error = error {
                 NSLog("Error occured fetching health data: \(error)")
                 return
             }
+            
+            guard let sample = sample else {
+                NSLog("Sample for Sleep Analysis could not be loaded")
+                return
+            }
+            
+            self.myHealth.timeToFallAsleep = Double(self.healthKitController.timeToFallAsleep(in: sample) / 60)
+            self.myHealth.timeAsleep = Double(self.healthKitController.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.asleep.rawValue, in: sample) / 3600)
+            self.updateLabels()
         }
     }
     
@@ -115,6 +131,8 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     let localNotificationHelper = LocalNotificationHelper()
 
     @IBOutlet weak var restingHRLabel: UILabel!
-    @IBOutlet weak var hoursOfSleepLabel: UILabel!
+    @IBOutlet weak var timeAsleepLabel: UILabel!
+    @IBOutlet weak var timeToFallAsleepLabel: UILabel!
+    
     
 }

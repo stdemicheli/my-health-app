@@ -67,7 +67,7 @@ class HealthKitController {
         }
     }
     
-    func getSleepAnalysis(from startDate: Date, to endDate: Date, completion: @escaping (Error?) -> Void) {
+    func getSleepAnalysis(from startDate: Date, to endDate: Date, completion: @escaping ([HKCategorySample]?, Error?) -> Void) {
         if let sleepType = HKObjectType.categoryType(forIdentifier: HKCategoryTypeIdentifier.sleepAnalysis) {
             let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
             
@@ -79,42 +79,33 @@ class HealthKitController {
                 DispatchQueue.main.async {
                     if let error = error {
                         NSLog("Error retrieving sleep data: \(error)")
-                        completion(error)
+                        completion(nil, error)
                         return
                     }
                     
                     guard let samples = samples else {
                         NSLog("Could not retrieve sample using query: \(query)")
-                        completion(NSError())
+                        completion(nil, NSError())
                         return
                     }
                     
                     guard let categorySamples = samples as? [HKCategorySample] else { return }
                     let filteredCategorySamples = self.filterOverlappingTimeIntervals(in: categorySamples)
+                    completion(filteredCategorySamples, nil)
                     
-                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.asleep.rawValue, in: filteredCategorySamples) / 3600))
-                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.inBed.rawValue, in: filteredCategorySamples) / 3600))
-                    print(Double(self.timeToFallAsleep(in: filteredCategorySamples) / 60))
+//                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.asleep.rawValue, in: filteredCategorySamples) / 3600))
+//                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.inBed.rawValue, in: filteredCategorySamples) / 3600))
+//                    print(Double(self.timeToFallAsleep(in: filteredCategorySamples) / 60))
                     
-                    for sample in filteredCategorySamples {
-                        let value = (sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue) ? "asleep" : "inBed"
-                        print("HealthKit sleep: \(sample.startDate) \(sample.endDate) - value: \(value)")
-                    }
+//                    for sample in filteredCategorySamples {
+//                        let value = (sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue) ? "asleep" : "inBed"
+//                        print("HealthKit sleep: \(sample.startDate) \(sample.endDate) - value: \(value)")
+//                    }
                     
                 }
             }
             healthStore?.execute(sampleQuery)
         }
-    }
-    
-    private func getSleepTimeInterval(for HKCategory: Int, in samples: [HKCategorySample]) -> TimeInterval {
-        var timeAsleep: TimeInterval = 0.0
-        for sample in samples {
-            if sample.value == HKCategory {
-                timeAsleep += sample.endDate.timeIntervalSince(sample.startDate)
-            }
-        }
-        return timeAsleep
     }
     
     private func filterOverlappingTimeIntervals(in samples: [HKCategorySample]) -> [HKCategorySample] {
@@ -128,7 +119,17 @@ class HealthKitController {
         return filteredSamples
     }
     
-    private func timeToFallAsleep(in samples: [HKCategorySample]) -> TimeInterval {
+    func getSleepTimeInterval(for HKCategory: Int, in samples: [HKCategorySample]) -> TimeInterval {
+        var timeAsleep: TimeInterval = 0.0
+        for sample in samples {
+            if sample.value == HKCategory {
+                timeAsleep += sample.endDate.timeIntervalSince(sample.startDate)
+            }
+        }
+        return timeAsleep
+    }
+    
+    func timeToFallAsleep(in samples: [HKCategorySample]) -> TimeInterval {
         let timeFellAsleep = samples.filter { $0.value == HKCategoryValueSleepAnalysis.asleep.rawValue }
                                     .map { $0.startDate }
                                     .reduce(Date()) { $0 > $1 ? $1 : $0 }
