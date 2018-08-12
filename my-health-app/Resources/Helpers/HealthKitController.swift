@@ -90,17 +90,17 @@ class HealthKitController {
                     }
                     
                     guard let categorySamples = samples as? [HKCategorySample] else { return }
-                    let filteredCategorySamples = self.filterOverlappingTimeIntervals(in: categorySamples)
-                    completion(filteredCategorySamples, nil)
+                    let asleepSamples = categorySamples.filter { $0.value != HKCategoryValueSleepAnalysis.asleep.rawValue }
+                    let inBedSamples = categorySamples.filter { $0.value != HKCategoryValueSleepAnalysis.inBed.rawValue }
+                    let filteredAsleepSamples = self.filterOverlappingTimeIntervals(in: asleepSamples)
+                    let filteredInBedSamples = self.filterOverlappingTimeIntervals(in: inBedSamples)
+                    let combinedFilteredList = filteredAsleepSamples + filteredInBedSamples
+                    completion(combinedFilteredList, nil)
                     
-//                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.asleep.rawValue, in: filteredCategorySamples) / 3600))
-//                    print(Double(self.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.inBed.rawValue, in: filteredCategorySamples) / 3600))
-//                    print(Double(self.timeToFallAsleep(in: filteredCategorySamples) / 60))
-                    
-//                    for sample in filteredCategorySamples {
-//                        let value = (sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue) ? "asleep" : "inBed"
-//                        print("HealthKit sleep: \(sample.startDate) \(sample.endDate) - value: \(value)")
-//                    }
+                    for sample in combinedFilteredList {
+                        let value = (sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue) ? "asleep" : "inBed"
+                        print("Filtered HealthKit sleep: \(sample.startDate) \(sample.endDate) - value: \(value)")
+                    }
                     
                 }
             }
@@ -111,8 +111,12 @@ class HealthKitController {
     private func filterOverlappingTimeIntervals(in samples: [HKCategorySample]) -> [HKCategorySample] {
         var filteredSamples: [HKCategorySample] = []
         for (index, sample) in samples.enumerated() {
-            if index == samples.count - 1 { break }
-            if max(sample.startDate, samples[index + 1].startDate) < min(sample.endDate, samples[index + 1].endDate) {
+            // The last iterated sample will be unique, so add that to the filtered list
+            if index == samples.count - 1 {
+                filteredSamples.append(sample)
+            }
+                // Check if the current samples date ranges overlap with the next sample.
+            else if !(max(sample.startDate, samples[index + 1].startDate) < min(sample.endDate, samples[index + 1].endDate)) {
                 filteredSamples.append(sample)
             }
         }
