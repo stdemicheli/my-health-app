@@ -39,59 +39,22 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     }
     
     private func updateLabels() {
-        if let restingHeartRate = myHealth.restingHeartRate {
+        if let restingHeartRate = myHealthController.myHealth.restingHeartRate {
             restingHRLabel.text = String(format: "%.1f", restingHeartRate)
         }
         
-        if let timeAsleep = myHealth.timeAsleep {
+        if let timeAsleep = myHealthController.myHealth.timeAsleep {
             timeAsleepLabel.text = "\(String(format: "%.1f", timeAsleep)) hr"
         }
 
-        if let timeToFallAsleep = myHealth.timeToFallAsleep {
+        if let timeToFallAsleep = myHealthController.myHealth.timeToFallAsleep {
             timeToFallAsleepLabel.text = "\(String(format: "%.0f", timeToFallAsleep)) min"
         }
     }
     
     private func updateHealthInfo() {
-        loadAndDisplayRestingHeartRate()
-        loadAndDisplaySleepAnalyisis()
-    }
-    
-    private func loadAndDisplayRestingHeartRate() {
-        healthKitController.getMostRecentSample(for: HKSampleType.quantityType(forIdentifier: .restingHeartRate)!) { (sample, error) in
-            guard let sample = sample else {
-                if let error = error {
-                    NSLog("Error occured fetching health data: \(error)")
-                }
-                return
-            }
-            
-            let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
-            let restingHeartRate = sample.quantity.doubleValue(for: unit)
-            self.myHealth.restingHeartRate = restingHeartRate
-            self.updateLabels()
-        }
-    }
-    
-    private func loadAndDisplaySleepAnalyisis() {
-        let today = Date()
-        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
-        
-        healthKitController.getSleepAnalysis(from: yesterday, to: today) { (sample, error) in
-            if let error = error {
-                NSLog("Error occured fetching health data: \(error)")
-                return
-            }
-            
-            guard let sample = sample else {
-                NSLog("Sample for Sleep Analysis could not be loaded")
-                return
-            }
-            
-            self.myHealth.timeToFallAsleep = Double(self.healthKitController.timeToFallAsleep(in: sample) / 60)
-            self.myHealth.timeAsleep = Double(self.healthKitController.getSleepTimeInterval(for: HKCategoryValueSleepAnalysis.asleep.rawValue, in: sample) / 3600)
-            self.updateLabels()
-        }
+        myHealthController.loadAndDisplayRestingHeartRate() { () in self.updateLabels() }
+        myHealthController.loadAndDisplaySleepAnalyisis() { () in self.updateLabels() }
     }
     
 //    private func handleLocalNotificationAuth() {
@@ -126,7 +89,7 @@ class MyHealthTableViewController: UITableViewController, HealthKitControllerDel
     private var myHealth = MyHealth()
     let myHealthController = MyHealthController()
     var healthKitController: HealthKitController {
-        return HealthKitController(healthTypesToWrite: HealthKitConstants().healthKitTypesToWrite, healthTypesToRead: HealthKitConstants().healthKitTypesToRead)
+        return HealthKitController(typesToWrite: HealthKitConstants().typesToWrite, typesToRead: HealthKitConstants().typesToRead)
     }
     let localNotificationHelper = LocalNotificationHelper()
 

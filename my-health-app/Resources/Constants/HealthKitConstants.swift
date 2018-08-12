@@ -11,11 +11,11 @@ import HealthKit
 
 struct HealthKitConstants {
     
-    var healthKitTypesToWrite: Set<HKSampleType> = Set([
+    var typesToWrite: Set<HKSampleType> = Set([
         HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
         HKObjectType.quantityType(forIdentifier: .heartRate)!])
     
-    var healthKitTypesToRead: Set<HKObjectType> = Set([
+    var typesToRead: Set<HKObjectType> = Set([
         HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
         HKObjectType.quantityType(forIdentifier: .heartRate)!,
         HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,

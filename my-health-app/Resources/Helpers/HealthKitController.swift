@@ -18,15 +18,15 @@ class HealthKitController {
     
     // MARK: - Init
     
-    init(healthTypesToWrite: Set<HKSampleType>, healthTypesToRead: Set<HKObjectType>) {
-        self.healthTypesToWrite = healthTypesToWrite
-        self.healthTypesToRead = healthTypesToRead
+    init(typesToWrite: Set<HKSampleType>, typesToRead: Set<HKObjectType>) {
+        self.typesToWrite = typesToWrite
+        self.typesToRead = typesToRead
     }
     
     // MARK: - Properties
     
-    var healthTypesToWrite: Set<HKSampleType>
-    var healthTypesToRead: Set<HKObjectType>
+    var typesToWrite: Set<HKSampleType>
+    var typesToRead: Set<HKObjectType>
     var healthStore: HKHealthStore? {
         return HKHealthStore.isHealthDataAvailable() ? HKHealthStore() : nil
     }
@@ -46,7 +46,7 @@ class HealthKitController {
             return
         }
         
-        healthStore.requestAuthorization(toShare: self.healthTypesToWrite, read: self.healthTypesToRead) { (success, error) in
+        healthStore.requestAuthorization(toShare: self.typesToWrite, read: self.typesToRead) { (success, error) in
             completion(success, error)
         }
     }
